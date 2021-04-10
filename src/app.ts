@@ -18,7 +18,7 @@ const main = async () => {
     // ${process.env.MONGO_URI}
     // process.env.node_env
 
-    await connect(`mongodb://localhost/vsExtension1`, {
+    await connect(`${process.env.MONGO_URI}`, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useCreateIndex: true
