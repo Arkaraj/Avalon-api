@@ -51,7 +51,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     passport_1.default.use(new passport_github_1.Strategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: "http://localhost:3000/auth/github/callback"
+        callbackURL: "https://avalon7.herokuapp.com/auth/github/callback"
     }, (_, __, profile, cb) => __awaiter(void 0, void 0, void 0, function* () {
         let user = yield User_1.default.findOne({ githubId: profile.id });
         if (user) {
