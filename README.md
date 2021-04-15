@@ -28,8 +28,3 @@
 
 - [x] DELETE /admin/:room_id/:user_id Admin should be able to kick members
 - [x] DELETE /admin/:roomId Admin can dismantle the room
-
-#### To do
-
-- [x] Create all the routes
-- [x] Connect it with Svelte, polka, fetch

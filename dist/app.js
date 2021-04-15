@@ -29,7 +29,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     yield mongoose_1.connect(`${process.env.MONGO_URI}`, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        useCreateIndex: true
+        useCreateIndex: true,
     }, (err) => {
         if (err) {
             console.log(err.message);
@@ -51,18 +51,26 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     passport_1.default.use(new passport_github_1.Strategy({
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: "https://avalon7.herokuapp.com/auth/github/callback"
+        callbackURL: "http://localhost:3000/auth/github/callback",
     }, (_, __, profile, cb) => __awaiter(void 0, void 0, void 0, function* () {
         let user = yield User_1.default.findOne({ githubId: profile.id });
         if (user) {
-            user.name = profile.displayName ? profile.displayName : profile.username;
+            user.name = profile.displayName
+                ? profile.displayName
+                : profile.username;
             yield user.save();
         }
         else {
-            const name = profile.displayName ? profile.displayName : profile.username;
+            const name = profile.displayName
+                ? profile.displayName
+                : profile.username;
             User_1.default.create({ name, githubId: profile.id });
         }
-        cb(null, { accessToken: jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user._id }, process.env.SECRET_JWT, { expiresIn: "30d" }) });
+        cb(null, {
+            accessToken: jsonwebtoken_1.default.sign({ userId: user === null || user === void 0 ? void 0 : user._id }, process.env.SECRET_JWT, {
+                expiresIn: "30d",
+            }),
+        });
     })));
     app.get("/me", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const authHeader = req.headers.authorization;
@@ -89,7 +97,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
     app.get("/", (_req, res) => {
         res.send("Avalon Vs Code Extension");
     });
-    app.get('/auth/github', passport_1.default.authenticate('github', { session: false }));
+    app.get("/auth/github", passport_1.default.authenticate("github", { session: false }));
     app.post("/join", isAuth_1.isAuth, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const { code } = req.body;
         const room = yield Room_1.default.findOne({ code });
@@ -97,7 +105,8 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             res.send({ msg: "Invalid room code", msgError: true });
         }
         else {
-            if (room.members.includes(req.userId) || room.admin.includes(req.userId)) {
+            if (room.members.includes(req.userId) ||
+                room.admin.includes(req.userId)) {
                 res.send({ msg: "User already a member", msgError: true });
             }
             else {
@@ -113,7 +122,7 @@ const main = () => __awaiter(void 0, void 0, void 0, function* () {
             }
         }
     }));
-    app.get('/auth/github/callback', passport_1.default.authenticate('github', { session: false }), function (req, res) {
+    app.get("/auth/github/callback", passport_1.default.authenticate("github", { session: false }), function (req, res) {
         res.redirect(`http://localhost:5001/auth/${req.user.accessToken}`);
     });
     const port = process.env.PORT || 3000;
