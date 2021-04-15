@@ -24,23 +24,26 @@ admin.get("/crooms", (req, res) => __awaiter(void 0, void 0, void 0, function* (
 }));
 admin.get("/:roomId", isAdmin_1.isAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     Room_1.default.findById(req.params.roomId)
-        .populate("members").exec((err, document) => __awaiter(void 0, void 0, void 0, function* () {
+        .populate("members")
+        .populate("admin")
+        .exec((err, document) => __awaiter(void 0, void 0, void 0, function* () {
         if (err) {
             res.send({ msg: "Internal Error", msgError: true });
         }
         else {
             const members = document === null || document === void 0 ? void 0 : document.members;
-            res.send({ members, msgError: false });
+            const admins = document === null || document === void 0 ? void 0 : document.admin;
+            res.send({ members, admins, msgError: false });
         }
     }));
 }));
-admin.post('/task/:roomId/:userId', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+admin.post("/task/:roomId/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { text } = req.body;
     const setTask = {
         text,
         completed: false,
         room: req.params.roomId,
-        user: req.params.userId
+        user: req.params.userId,
     };
     const task = yield (yield Task_1.default.create(setTask)).save();
     const user = yield User_1.default.findById(req.params.userId);
@@ -49,8 +52,11 @@ admin.post('/task/:roomId/:userId', (req, res) => __awaiter(void 0, void 0, void
     res.send({ task });
 }));
 admin.get("/:roomId/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const tasks = yield Task_1.default.find({ room: req.params.roomId, user: req.params.userId }).sort({
-        _id: "desc"
+    const tasks = yield Task_1.default.find({
+        room: req.params.roomId,
+        user: req.params.userId,
+    }).sort({
+        _id: "desc",
     });
     res.send({ tasks });
 }));
@@ -58,7 +64,7 @@ admin.delete("/task/:taskId", (req, res) => __awaiter(void 0, void 0, void 0, fu
     yield Task_1.default.findByIdAndDelete(req.params.taskId);
     const user = yield User_1.default.findOne({ tasks: req.params.taskId });
     if (user) {
-        user.tasks = user.tasks.filter(u => u != req.params.taskId);
+        user.tasks = user.tasks.filter((u) => u != req.params.taskId);
         yield user.save();
         res.send({ msg: "successfully deleted the task", done: true });
     }
@@ -77,11 +83,14 @@ admin.post("/addAdmins/:roomId", isAdmin_1.isAdmin, (req, res) => __awaiter(void
         if (user) {
             const room = yield Room_1.default.findById(req.params.roomId);
             if (room === null || room === void 0 ? void 0 : room.admin.includes(user === null || user === void 0 ? void 0 : user._id)) {
-                res.send({ msg: "User is already the Admin of the room", msgError: true });
+                res.send({
+                    msg: "User is already the Admin of the room",
+                    msgError: true,
+                });
             }
             else {
                 room === null || room === void 0 ? void 0 : room.admin.push(user === null || user === void 0 ? void 0 : user._id);
-                room === null || room === void 0 ? void 0 : room.save(err => {
+                room === null || room === void 0 ? void 0 : room.save((err) => {
                     if (err) {
                         res.send({ msg: "Internal Error", msgError: true });
                     }
@@ -103,12 +112,15 @@ admin.delete("/leaveAdmin/:roomId", isAdmin_1.isAdmin, (req, res) => __awaiter(v
     try {
         const room = yield Room_1.default.findById(req.params.roomId);
         if (room === null || room === void 0 ? void 0 : room.admin) {
-            room.admin = room.admin.filter(id => id != req.userId);
+            room.admin = room.admin.filter((id) => id != req.userId);
             if (room.admin.length == 0) {
-                res.send({ msg: `You are the only Admin of the Room: ${room.name}, You can't leave it!`, msgError: true });
+                res.send({
+                    msg: `You are the only Admin of the Room: ${room.name}, You can't leave it!`,
+                    msgError: true,
+                });
             }
             else {
-                room.save(err => {
+                room.save((err) => {
                     if (err) {
                         res.send({ msg: "Something went wrong", msgError: true });
                     }
@@ -132,7 +144,7 @@ admin.put("/:roomId", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const room = yield Room_1.default.findById(req.params.roomId);
         if (room === null || room === void 0 ? void 0 : room.description) {
             room.description = desc;
-            room.save(err => {
+            room.save((err) => {
                 if (err) {
                     res.send({ msg: "Internal Server error", msgError: true });
                 }
@@ -153,7 +165,7 @@ admin.delete("/:roomId/:userId", isAdmin_1.isAdmin, (req, res) => __awaiter(void
             res.send({ msg: "Invalid room", msgError: true });
         }
         else {
-            room.members = room.members.filter(r => r != req.params.userId);
+            room.members = room.members.filter((r) => r != req.params.userId);
             room.save((err) => {
                 if (err) {
                     res.send({ msg: "Some error occured", msgError: true });
