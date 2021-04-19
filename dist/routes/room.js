@@ -13,9 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const isAdmin_1 = require("../isAdmin");
 const Room_1 = __importDefault(require("../models/Room"));
 const room = express_1.Router();
-room.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+room.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { name, description } = req.body;
     if (!name || !description) {
         res.send({ msg: "Please Enter the Name and Description", msgError: true });
@@ -24,10 +25,10 @@ room.post('/', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const window = {
             admin: [req.userId],
             name,
-            description
+            description,
         };
         const room = yield Room_1.default.create(window);
-        room.save(err => {
+        room.save((err) => {
             if (err) {
                 console.log("ERROR: " + err);
                 res.send({ msg: "Some Internal error occured", msgError: true });
@@ -43,6 +44,59 @@ room.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const admin = yield Room_1.default.find({ admin: req.userId });
     res.send({ rooms, admin });
 }));
+room.put("/msg/:roomId", isAdmin_1.isAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { mesg } = req.body;
+    try {
+        const room = yield Room_1.default.findById(req.params.roomId);
+        if ((room === null || room === void 0 ? void 0 : room.message) == "") {
+            room.message = mesg;
+            room.save((err) => {
+                if (err) {
+                    res.send({ msg: "Internal Server error", msgError: true });
+                }
+                else {
+                    res.send({ msg: room.message, msgError: false });
+                }
+            });
+        }
+        else if (room === null || room === void 0 ? void 0 : room.message) {
+            room.message = mesg;
+            room.save((err) => {
+                if (err) {
+                    res.send({ msg: "Internal Server error", msgError: true });
+                }
+                else {
+                    res.send({ msg: room.message, msgError: false });
+                }
+            });
+        }
+        else {
+            res.send({ msg: "Internal Server Error", msgError: true });
+        }
+    }
+    catch (err) {
+        res.send({ msg: "Invalid room", msgError: true });
+    }
+}));
+room.delete("/msg/:roomId", isAdmin_1.isAdmin, (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const room = yield Room_1.default.findById(req.params.roomId);
+        if (room === null || room === void 0 ? void 0 : room.message) {
+            room.message = "";
+            room.save((err) => {
+                if (err) {
+                    res.send({ msg: "Internal Server error", msgError: true });
+                }
+                else {
+                    res.send({ room, msgError: false });
+                }
+            });
+        }
+    }
+    catch (err) {
+        res.send({ msg: "Invalid room", msgError: true });
+    }
+}));
 room.delete("/:roomId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const room = yield Room_1.default.findById(req.params.roomId);
@@ -50,7 +104,7 @@ room.delete("/:roomId", (req, res) => __awaiter(void 0, void 0, void 0, function
             res.send({ msg: "Invalid room", msgError: true });
         }
         else {
-            room.members = room.members.filter(r => r != req.userId);
+            room.members = room.members.filter((r) => r != req.userId);
             room.save((err) => {
                 if (err) {
                     res.send({ msg: "Some error occured", msgError: true });
