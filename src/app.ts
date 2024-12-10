@@ -1,7 +1,9 @@
 /* eslint-disable eqeqeq */
-require("dotenv-save").config();
 import express from "express";
 import { CallbackError, connect } from "mongoose";
+if (process.env.NODE_ENV != 'production') {
+  require("dotenv-save").config();
+}
 import User from "./models/User";
 import { Strategy as GitHubStrategy } from "passport-github";
 import passport from "passport";
