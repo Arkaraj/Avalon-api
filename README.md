@@ -1,6 +1,6 @@
 # Avalon's API
 
-    Heroku: https://avalon7.herokuapp.com/
+    Heroku: https://avalon-api.vercel.app/
 
 ## Routes:
 

@@ -59,7 +59,7 @@ const main = async () => {
       {
         clientID: process.env.GITHUB_CLIENT_ID,
         clientSecret: process.env.GITHUB_CLIENT_SECRET,
-        callbackURL: "https://avalon7.herokuapp.com/auth/github/callback",
+        callbackURL: "https://avalon-api.vercel.app/auth/github/callback",
       },
       async (_, __, profile, cb) => {
         let user = await User.findOne({ githubId: profile.id });
